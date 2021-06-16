@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical">
 
     <FrameLayout
@@ -16,19 +16,17 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <androidx.constraintlayout.widget.ConstraintLayout
+            <me.twc.scancamera.camera.decoration.ShadowLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
+
                 <me.twc.scancamera.camera.decoration.BarcodeDecorationView
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_width="300dp"
-                    android:layout_height="100dp"
+                    android:layout_width="300.23456dp"
+                    android:layout_height="100.987534dp"
+                    android:layout_gravity="center"
                     app:cornerBoxColor="@android:color/white"
-                    app:rimLineColor="@android:color/white"/>
-            </androidx.constraintlayout.widget.ConstraintLayout>
+                    app:rimLineColor="@android:color/white" />
+            </me.twc.scancamera.camera.decoration.ShadowLayout>
 
         </me.twc.scancamera.camera.CameraView>
 
