@@ -9,7 +9,7 @@ import android.util.Size
 import android.view.Display
 import android.view.TextureView
 import com.google.zxing.DecodeHintType
-import com.google.zxing.client.android.camera.CameraConfigurationUtils
+import copy.com.google.zxing.client.android.camera.CameraConfigurationUtils
 import copy.com.google.zxing.client.android.camera.open.OpenCamera
 import copy.com.journeyapps.barcodescanner.Decoder
 import copy.com.journeyapps.barcodescanner.DecoderFactory
