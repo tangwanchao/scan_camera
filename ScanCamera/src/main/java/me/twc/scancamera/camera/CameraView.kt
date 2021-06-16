@@ -16,6 +16,9 @@ import android.widget.FrameLayout
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
+import copy.com.google.zxing.client.android.camera.open.OpenCamera
+import copy.com.google.zxing.client.android.camera.open.OpenCameraInterface
+import copy.com.journeyapps.barcodescanner.camera.AutoFocusManager
 import me.twc.impl.SimpleSurfaceTextureListener
 import me.twc.scancamera.camera.decoration.CropRect
 import me.twc.scancamera.camera.setting.Settings
@@ -134,7 +137,7 @@ class CameraView @JvmOverloads constructor(
         private val mCameraThread: CameraThread = CameraThread()
     ) : SimpleSurfaceTextureListener, Camera.PreviewCallback {
         //<editor-fold desc="私有属性">
-        var mCamera: com.google.zxing.client.android.camera.open.OpenCamera? = null
+        var mCamera: OpenCamera? = null
             private set
         var mCameraParametersWorker: CameraParametersWorker? = null
             private set
@@ -145,7 +148,7 @@ class CameraView @JvmOverloads constructor(
          * 是否已经成功开启预览的标记
          */
         private var mStartedPreview: Boolean = false
-        private var mAutoFocusManager: com.journeyapps.barcodescanner.camera.AutoFocusManager? = null
+        private var mAutoFocusManager: AutoFocusManager? = null
         private var mDecodeThread: BarcodeDecodeThread? = null
         private var mScanBarcodeCallback: ScanBarcodeCallback? = null
 
@@ -155,7 +158,7 @@ class CameraView @JvmOverloads constructor(
 
         //<editor-fold desc="打开相机">
         private fun openCamera() = mCameraThread.enqueue {
-            val camera = com.google.zxing.client.android.camera.open.OpenCameraInterface.open(Camera.CameraInfo.CAMERA_FACING_BACK)
+            val camera = OpenCameraInterface.open(Camera.CameraInfo.CAMERA_FACING_BACK)
             mCamera = camera
             if (camera != null) {
                 post { requestLayout() }
@@ -221,7 +224,7 @@ class CameraView @JvmOverloads constructor(
             }
             mStartedPreview = true
             mAutoFocusManager =
-                com.journeyapps.barcodescanner.camera.AutoFocusManager(camera.camera, mSettings)
+                AutoFocusManager(camera.camera, mSettings)
             mDecodeThread =
                 BarcodeDecodeThread(cameraParameterWorker.getDecoder())
             mScanBarcodeCallback?.let(::scanBarcode)

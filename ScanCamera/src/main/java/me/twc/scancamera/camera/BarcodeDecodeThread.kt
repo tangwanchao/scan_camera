@@ -1,14 +1,15 @@
 package me.twc.scancamera.camera
 
-import com.journeyapps.barcodescanner.SourceData
+import copy.com.journeyapps.barcodescanner.SourceData
 import com.google.zxing.Result
+import copy.com.journeyapps.barcodescanner.Decoder
 
 /**
  * @author 唐万超
  * @date 2021/06/15
  */
 class BarcodeDecodeThread(
-    private val mDecoder: com.journeyapps.barcodescanner.Decoder
+    private val mDecoder: Decoder
 ) {
 
     private var mThread: CameraThread? = CameraThread("BarcodeDecodeThread")
@@ -19,7 +20,7 @@ class BarcodeDecodeThread(
      * @param sourceData SourceData
      */
     fun decode(
-        sourceData: com.journeyapps.barcodescanner.SourceData,
+        sourceData: SourceData,
         callback: (result: Result?) -> Unit
     ) = mThread?.enqueue {
         val luminanceSource = sourceData.createSource()

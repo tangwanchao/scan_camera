@@ -10,6 +10,13 @@ import android.view.Display
 import android.view.TextureView
 import com.google.zxing.DecodeHintType
 import com.google.zxing.client.android.camera.CameraConfigurationUtils
+import copy.com.google.zxing.client.android.camera.open.OpenCamera
+import copy.com.journeyapps.barcodescanner.Decoder
+import copy.com.journeyapps.barcodescanner.DecoderFactory
+import copy.com.journeyapps.barcodescanner.DefaultDecoderFactory
+import copy.com.journeyapps.barcodescanner.SourceData
+import copy.com.journeyapps.barcodescanner.camera.AutoFocusManager
+import copy.com.journeyapps.barcodescanner.camera.CenterCropStrategy
 import me.twc.scancamera.camera.setting.FocusMode
 import me.twc.scancamera.camera.setting.Settings
 import me.twc.utils.logD
@@ -37,9 +44,9 @@ data class CameraParametersWorker(
     val cameraDisplayOrientation: Int,
     val settings: Settings,
     val mCropRectInCameraView: Rect? = null,
-    val decoderFactory: com.journeyapps.barcodescanner.DecoderFactory = com.journeyapps.barcodescanner.DefaultDecoderFactory()
+    val decoderFactory: DecoderFactory = DefaultDecoderFactory()
 ) {
-    private val mPreviewScalingStrategy = com.journeyapps.barcodescanner.camera.CenterCropStrategy()
+    private val mPreviewScalingStrategy = CenterCropStrategy()
 
     /**
      * [set] 成功后,该值必然存在
@@ -53,7 +60,7 @@ data class CameraParametersWorker(
      * @return [true : 参数设置成功]
      *         [false: 其他情况]
      */
-    fun set(openCamera: com.google.zxing.client.android.camera.open.OpenCamera): Boolean {
+    fun set(openCamera: OpenCamera): Boolean {
         val parameters = openCamera.camera.parameters
         if (parameters == null) {
             logD("设备异常: 无法获取相机参数")
@@ -111,7 +118,7 @@ data class CameraParametersWorker(
 
         val desired = if (isCameraRotated()) cameraViewSize.rotation() else cameraViewSize
         return mPreviewScalingStrategy.getBestPreviewSize(
-            sizes.map { com.journeyapps.barcodescanner.Size(it.width, it.height) },
+            sizes.map { copy.com.journeyapps.barcodescanner.Size(it.width, it.height) },
             desired.toSize()
         ).toSize()
     }
@@ -120,7 +127,7 @@ data class CameraParametersWorker(
      * 预览/拍照旋转后图片裁剪区域
      */
     fun getCropPreviewRect(
-        openCamera: com.google.zxing.client.android.camera.open.OpenCamera,
+        openCamera: OpenCamera,
         cropRectInCameraView: Rect?
     ): Rect? {
         if(cropRectInCameraView == null) return null
@@ -249,7 +256,7 @@ data class CameraParametersWorker(
                 parameters.flashMode == Camera.Parameters.FLASH_MODE_TORCH
     }
 
-    fun setTorch(camera: com.google.zxing.client.android.camera.open.OpenCamera, on: Boolean, autoFocusManager: com.journeyapps.barcodescanner.camera.AutoFocusManager? = null) {
+    fun setTorch(camera: OpenCamera, on: Boolean, autoFocusManager: AutoFocusManager? = null) {
         try {
             val parameter = camera.camera.parameters
             val isTorchOn = isTorchOn(parameter)
@@ -296,11 +303,11 @@ data class CameraParametersWorker(
         data: ByteArray?,
         camera: Camera?,
         cropRect: Rect? = null
-    ): com.journeyapps.barcodescanner.SourceData? {
+    ): SourceData? {
         if (data == null || camera == null) return null
         val previewFormat = camera.parameters.previewFormat
         val previewSize = camera.parameters.previewSize
-        return com.journeyapps.barcodescanner.SourceData(
+        return SourceData(
             data,
             previewSize.width,
             previewSize.height,
@@ -313,7 +320,7 @@ data class CameraParametersWorker(
     //</editor-fold>
 
     //<editor-fold desc="获取 Decoder">
-    fun getDecoder(): com.journeyapps.barcodescanner.Decoder {
+    fun getDecoder(): Decoder {
         val decodeHintTypes = mutableMapOf<DecodeHintType, Any>()
         decodeHintTypes[DecodeHintType.POSSIBLE_FORMATS] = settings.decodeFormats
         return decoderFactory.createDecoder(decodeHintTypes)

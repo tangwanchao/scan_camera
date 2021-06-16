@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.zxing.client.android.camera.open
+package copy.com.google.zxing.client.android.camera.open
 
 import android.hardware.Camera
 import android.hardware.Camera.CameraInfo

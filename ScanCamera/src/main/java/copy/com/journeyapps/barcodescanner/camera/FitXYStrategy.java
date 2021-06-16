@@ -1,8 +1,8 @@
-package com.journeyapps.barcodescanner.camera;
+package copy.com.journeyapps.barcodescanner.camera;
 
 import android.graphics.Rect;
 
-import com.journeyapps.barcodescanner.Size;
+import copy.com.journeyapps.barcodescanner.Size;
 
 /**
  * Scales the size so that it fits exactly. Aspect ratio is NOT preserved.

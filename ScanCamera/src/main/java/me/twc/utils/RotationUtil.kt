@@ -3,6 +3,8 @@ package me.twc.utils
 import android.content.Context
 import android.view.Surface
 import android.view.WindowManager
+import copy.com.google.zxing.client.android.camera.open.CameraFacing
+import copy.com.google.zxing.client.android.camera.open.OpenCamera
 
 /**
  * @author 唐万超
@@ -25,8 +27,8 @@ object RotationUtil {
         }
     }
 
-    fun getCameraDisplayOrientation(openCamera: com.google.zxing.client.android.camera.open.OpenCamera, displayRotation: Int): Int {
-        return if (openCamera.facing == com.google.zxing.client.android.camera.open.CameraFacing.FRONT) {
+    fun getCameraDisplayOrientation(openCamera: OpenCamera, displayRotation: Int): Int {
+        return if (openCamera.facing == CameraFacing.FRONT) {
             val temp = (openCamera.orientation + displayRotation) % 360
             (360 - temp) % 360
         } else {
@@ -35,17 +37,17 @@ object RotationUtil {
     }
 
     fun calculateCaptureRotation(
-        openCamera: com.google.zxing.client.android.camera.open.OpenCamera,
+        openCamera: OpenCamera,
         displayRotation: Int,
         deviceRotation: Int
     ): Int {
-        var captureRotation = if (openCamera.facing == com.google.zxing.client.android.camera.open.CameraFacing.FRONT) {
+        var captureRotation = if (openCamera.facing == CameraFacing.FRONT) {
             (openCamera.orientation + displayRotation) % 360
         } else {  // back-facing camera
             (openCamera.orientation - displayRotation + 360) % 360
         }
 
-        captureRotation = if (openCamera.facing == com.google.zxing.client.android.camera.open.CameraFacing.FRONT) {
+        captureRotation = if (openCamera.facing == CameraFacing.FRONT) {
             (captureRotation - (displayRotation - deviceRotation) + 360) % 360
         } else {  // back-facing camera
             (captureRotation + (displayRotation - deviceRotation) + 360) % 360

@@ -13,26 +13,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.google.zxing.client.android.camera.open
-
-import android.hardware.Camera
+package copy.com.google.zxing.client.android.camera.open
 
 /**
- * 打开的相机实例和该相机的一些原始数据
- *
- * @param mIndex 相机 id
- * @param camera 相机具体实例
- * @param facing 相机朝向
- * @param orientation 相机角度
+ * Enumeration of directions a camera may face: front or back.
  */
-@Suppress("DEPRECATION","MemberVisibilityCanBePrivate")
-class OpenCamera(
-    private val mIndex: Int,
-    val camera: Camera,
-    val facing: CameraFacing,
-    val orientation: Int
-) {
-    override fun toString(): String {
-        return "Camera #$mIndex : $facing,$orientation"
-    }
+enum class CameraFacing {
+    BACK,  // must be value 0!
+    FRONT; // must be value 1!
 }

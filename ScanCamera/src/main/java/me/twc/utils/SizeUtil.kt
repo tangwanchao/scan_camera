@@ -9,8 +9,8 @@ import android.util.Size
  */
 fun Size.rotation():Size = Size(height,width)
 
-fun com.journeyapps.barcodescanner.Size.toSize() = Size(width, height)
+fun copy.com.journeyapps.barcodescanner.Size.toSize() = Size(width, height)
 
 fun Camera.Size.toSize() = Size(width, height)
 
-fun Size.toSize() = com.journeyapps.barcodescanner.Size(width, height)
+fun Size.toSize() = copy.com.journeyapps.barcodescanner.Size(width, height)

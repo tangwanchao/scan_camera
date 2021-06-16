@@ -1,16 +1,16 @@
-package com.journeyapps.barcodescanner.camera;
+package copy.com.journeyapps.barcodescanner.camera;
 
 import android.graphics.Rect;
 import android.util.Log;
 
-import com.journeyapps.barcodescanner.Size;
+import copy.com.journeyapps.barcodescanner.Size;
 
 /**
- * Scales the dimensions so that it fits entirely inside the parent.One of width or height will
- * fit exactly. Aspect ratio is preserved.
+ * Scales the size so that both dimensions will be greater than or equal to the corresponding
+ * dimension of the parent. One of width or height will fit exactly. Aspect ratio is preserved.
  */
-public class CenterCropStrategy extends PreviewScalingStrategy {
-    private static final String TAG = CenterCropStrategy.class.getSimpleName();
+public class FitCenterStrategy extends PreviewScalingStrategy {
+    private static final String TAG = FitCenterStrategy.class.getSimpleName();
 
 
     /**
@@ -30,7 +30,7 @@ public class CenterCropStrategy extends PreviewScalingStrategy {
         if (size.width <= 0 || size.height <= 0) {
             return 0f;
         }
-        Size scaled = size.scaleCrop(desired);
+        Size scaled = size.scaleFit(desired);
         // Scaling preserves aspect ratio
         float scaleRatio = scaled.width * 1.0f / size.width;
 
@@ -46,12 +46,12 @@ public class CenterCropStrategy extends PreviewScalingStrategy {
 
         // Ratio of scaledDimension / dimension.
         // Note that with scaleCrop, only one dimension is cropped.
-        float cropRatio = scaled.width * 1.0f / desired.width +
-                scaled.height * 1.0f / desired.height;
+        float cropRatio = (desired.width * 1.0f / scaled.width) *
+                (desired.height * 1.0f / scaled.height);
 
-        // Cropping is bad, square it
-        // 1.0 means no cropping. 50% cropping is 0.44f, 10% cropping is 0.82f
-        float cropScore = 1.0f / cropRatio / cropRatio;
+        // Cropping is very bad, since it's used-visible for centerFit
+        // 1.0 means no cropping.
+        float cropScore = 1.0f / cropRatio / cropRatio / cropRatio;
 
         return scaleScore * cropScore;
     }
@@ -67,7 +67,7 @@ public class CenterCropStrategy extends PreviewScalingStrategy {
      */
     public Rect scalePreview(Size previewSize, Size viewfinderSize) {
         // We avoid scaling if feasible.
-        Size scaledPreview = previewSize.scaleCrop(viewfinderSize);
+        Size scaledPreview = previewSize.scaleFit(viewfinderSize);
         Log.i(TAG, "Preview: " + previewSize + "; Scaled: " + scaledPreview + "; Want: " + viewfinderSize);
 
         int dx = (scaledPreview.width - viewfinderSize.width) / 2;
