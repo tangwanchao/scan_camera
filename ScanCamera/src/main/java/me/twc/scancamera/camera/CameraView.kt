@@ -91,6 +91,13 @@ class CameraView @JvmOverloads constructor(
         mSettings = settings
     }
 
+    /**
+     * 重新启动预览
+     * 此方法可安全随时调用
+     * 一般在 [takePicture] 收到结果后调用
+     */
+    fun restartPreview() = mCameraManager.restartPreview()
+
     fun create() = mCameraManager.startProcess()
 
     fun resume() = mCameraManager.startProcess()
@@ -232,6 +239,19 @@ class CameraView @JvmOverloads constructor(
         }
         //</editor-fold>
 
+        //<editor-fold desc="重启预览">
+        fun restartPreview() = mCameraThread.enqueue {
+            val camera = mCamera
+            if(camera == null){
+                logD("重启预览失败")
+                return@enqueue
+            }
+            camera.camera.startPreview()
+            mStartedPreview = true
+            mScanBarcodeCallback?.let(::scanBarcode)
+        }
+        //</editor-fold>
+
         //<editor-fold desc="结束预览并退出相机">
         private fun closeCamera() = mCameraThread.enqueue {
             mAutoFocusManager?.stop()
@@ -345,12 +365,10 @@ class CameraView @JvmOverloads constructor(
                         takePictureCallback.shutter,
                         takePictureCallback.raw,
                         takePictureCallback.postview
-                    ) { data, cam ->
+                    ) { data, _ ->
                         takePictureCallback.jpeg?.invoke(data, camera.camera, info)
                         if (takePictureCallback.autoStartPreview) {
-                            cam.startPreview()
-                            mStartedPreview = true
-                            mScanBarcodeCallback?.let(::scanBarcode)
+                            restartPreview()
                         }
                     }
 
