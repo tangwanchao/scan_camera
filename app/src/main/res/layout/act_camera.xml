@@ -16,17 +16,32 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
-            <me.twc.scancamera.camera.decoration.ShadowLayout
+            <me.twc.scancamera.camera.decoration.ConstraintShadowLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8pt"
+                    android:text="支持 买家订单/快递/物品/IMEI查询"
+                    android:textColor="@android:color/white"
+                    android:textSize="14sp"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintBottom_toTopOf="@+id/barcode_decoration_view" />
+
                 <me.twc.scancamera.camera.decoration.BarcodeDecorationView
+                    android:id="@+id/barcode_decoration_view"
                     android:layout_width="300.23456dp"
                     android:layout_height="100.987534dp"
-                    android:layout_gravity="center"
                     app:cornerBoxColor="@android:color/white"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toTopOf="parent"
                     app:rimLineColor="@android:color/white" />
-            </me.twc.scancamera.camera.decoration.ShadowLayout>
+            </me.twc.scancamera.camera.decoration.ConstraintShadowLayout>
 
         </me.twc.scancamera.camera.CameraView>
 
