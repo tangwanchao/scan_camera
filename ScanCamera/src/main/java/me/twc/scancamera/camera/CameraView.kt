@@ -225,7 +225,7 @@ class CameraView @JvmOverloads constructor(
             }
             camera.camera.let {
                 val transform = cameraParameterWorker.calculatePreviewCenterCrop(previewSize)
-                mTextureView.setTransform(transform)
+                post { mTextureView.setTransform(transform) }
                 it.setPreviewTexture(mTextureView.surfaceTexture)
                 it.startPreview()
             }
