@@ -127,6 +127,12 @@ class CameraView @JvmOverloads constructor(
     // 设置手电筒
     fun setTorch(on: Boolean) = mCameraManager.setTorch(on)
 
+    // 预览缩放
+    fun setScale(scale:Float){
+        mTextureView.scaleX = scale
+        mTextureView.scaleY = scale
+    }
+
     // 扫码
     fun scanBarcode(callback: ScanBarcodeCallback) = mCameraManager.scanBarcode(callback)
 
