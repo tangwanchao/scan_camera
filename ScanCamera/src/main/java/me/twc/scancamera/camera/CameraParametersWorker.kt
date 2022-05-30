@@ -298,6 +298,7 @@ data class CameraParametersWorker(
             }
             parameters.zoom = min(selectIndex, parameters.maxZoom)
             camera.camera.parameters = parameters
+            return true
         } catch (th: Throwable) {
             th.printStackTrace()
         }
