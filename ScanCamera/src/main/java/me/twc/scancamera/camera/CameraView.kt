@@ -13,6 +13,8 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.WindowManager
 import android.widget.FrameLayout
+import androidx.annotation.FloatRange
+import androidx.annotation.IntRange
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -64,20 +66,21 @@ class CameraView @JvmOverloads constructor(
      * 获取相对于 [CameraView] 的裁剪区域
      */
     private fun getCropRect(): Rect? {
-        fun findCropView(group:ViewGroup):View?{
+        fun findCropView(group: ViewGroup): View? {
             for (child in group.children) {
-                if (child is CropRect){
-                   return child
+                if (child is CropRect) {
+                    return child
                 }
-                if(child is ViewGroup){
+                if (child is ViewGroup) {
                     val find = findCropView(child)
-                    if(find != null){
+                    if (find != null) {
                         return find
                     }
                 }
             }
             return null
         }
+
         val cropViewOr: View? = findCropView(this)
 
         if (cropViewOr == null || !cropViewOr.isVisible || !cropViewOr.isEnabled) {
@@ -128,9 +131,14 @@ class CameraView @JvmOverloads constructor(
     fun setTorch(on: Boolean) = mCameraManager.setTorch(on)
 
     // 预览缩放
-    fun setScale(scale:Float){
+    fun setScale(scale: Float) {
         mTextureView.scaleX = scale
         mTextureView.scaleY = scale
+    }
+
+    // 焦距
+    fun setZoom(@FloatRange(from = 1.0) zoom: Float, callback: (success: Boolean) -> Unit) {
+        mCameraManager.setZoom(zoom, callback)
     }
 
     // 扫码
@@ -248,7 +256,7 @@ class CameraView @JvmOverloads constructor(
         //<editor-fold desc="重启预览">
         fun restartPreview() = mCameraThread.enqueue {
             val camera = mCamera
-            if(camera == null){
+            if (camera == null) {
                 logD("重启预览失败")
                 return@enqueue
             }
@@ -292,6 +300,19 @@ class CameraView @JvmOverloads constructor(
         }
         //</editor-fold>
 
+        //<editor-fold desc="设置焦距">
+        fun setZoom(@FloatRange(from = 1.0) zoom: Float, callback: (success: Boolean) -> Unit) = mCameraThread.enqueue {
+            val camera = mCamera
+            val cameraParametersWorker = mCameraParametersWorker
+            if (camera == null || cameraParametersWorker == null) {
+                callback(false)
+                return@enqueue
+            }
+            val result = cameraParametersWorker.setZoom(camera, zoom)
+            callback(result)
+        }
+        //</editor-fold>
+
         //<editor-fold desc="预览回调">
         override fun onPreviewFrame(data: ByteArray?, camera: Camera?) {
             val callback = mScanBarcodeCallback ?: return
@@ -310,7 +331,7 @@ class CameraView @JvmOverloads constructor(
                 return
             }
             val cropRect = cameraParametersWorker.getCropPreviewRect(openCamera, getCropRect())
-            val sourceData = cameraParametersWorker.createSourceData(data, camera,cropRect)
+            val sourceData = cameraParametersWorker.createSourceData(data, camera, cropRect)
             if (sourceData == null) {
                 logD("source data is null")
                 return

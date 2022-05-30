@@ -5,9 +5,11 @@ package me.twc.scancamera.camera
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.hardware.Camera
+import android.util.Log
 import android.util.Size
 import android.view.Display
 import android.view.TextureView
+import androidx.annotation.FloatRange
 import com.google.zxing.DecodeHintType
 import copy.com.google.zxing.client.android.camera.CameraConfigurationUtils
 import copy.com.google.zxing.client.android.camera.open.OpenCamera
@@ -22,6 +24,7 @@ import me.twc.scancamera.camera.setting.Settings
 import me.twc.utils.logD
 import me.twc.utils.rotation
 import me.twc.utils.toSize
+import kotlin.math.min
 
 /**
  * @author 唐万超
@@ -130,9 +133,9 @@ data class CameraParametersWorker(
         openCamera: OpenCamera,
         cropRectInCameraView: Rect?
     ): Rect? {
-        if(cropRectInCameraView == null) return null
+        if (cropRectInCameraView == null) return null
 
-        if(cropRectInCameraView.width() <= 0 || cropRectInCameraView.height() <= 0){
+        if (cropRectInCameraView.width() <= 0 || cropRectInCameraView.height() <= 0) {
             logD("无效的裁剪区域")
             return null
         }
@@ -271,6 +274,34 @@ data class CameraParametersWorker(
         } catch (th: Throwable) {
             th.printStackTrace()
         }
+    }
+    //</editor-fold>
+
+    //<editor-fold desc="设置焦距">
+    /**
+     * @param zoom 放大倍数
+     *
+     * @return [true : 设置成功]
+     *         [false: 设置失败]
+     */
+    fun setZoom(camera: OpenCamera, @FloatRange(from = 1.0) zoom: Float): Boolean {
+        try {
+            val parameters = camera.camera.parameters
+            if (!parameters.isZoomSupported) return false
+            val zoomRatios = parameters.zoomRatios
+            var selectIndex = zoomRatios.size - 1
+            for ((index, value) in zoomRatios.withIndex()) {
+                if (value >= zoom * 100) {
+                    selectIndex = index
+                    break
+                }
+            }
+            parameters.zoom = min(selectIndex, parameters.maxZoom)
+            camera.camera.parameters = parameters
+        } catch (th: Throwable) {
+            th.printStackTrace()
+        }
+        return false
     }
     //</editor-fold>
 
