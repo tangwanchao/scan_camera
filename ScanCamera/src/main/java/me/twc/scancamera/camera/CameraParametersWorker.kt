@@ -277,6 +277,33 @@ data class CameraParametersWorker(
     }
     //</editor-fold>
 
+    //<editor-fold desc="设置对焦">
+    fun setManualFocusing(camera: OpenCamera, rect: Rect) {
+        try {
+            val parameter = camera.camera.parameters
+            camera.camera.cancelAutoFocus()
+            if (parameter.maxNumFocusAreas > 0) {
+                parameter.focusAreas = listOf(Camera.Area(rect, 1000))
+            }
+            val focusMode = parameter.focusMode
+            parameter.focusMode = Camera.Parameters.FOCUS_MODE_MACRO
+            camera.camera.parameters = parameter
+            camera.camera.autoFocus { success, _ ->
+                logD("对焦结果: $success $rect")
+                try {
+                    val p = camera.camera.parameters
+                    parameter.focusMode = focusMode
+                    camera.camera.parameters = p
+                } catch (th: Throwable) {
+                    th.printStackTrace()
+                }
+            }
+        } catch (th: Throwable) {
+            th.printStackTrace()
+        }
+    }
+    //</editor-fold>
+
     //<editor-fold desc="设置焦距">
     /**
      * @param zoom 放大倍数

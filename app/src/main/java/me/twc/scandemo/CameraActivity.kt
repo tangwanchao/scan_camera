@@ -33,6 +33,7 @@ class CameraActivity : AppCompatActivity() {
                 logD("扫码结果:$result")
             }
         })
+        mBinding.cameraView.setManualFocus(true)
 
         mBinding.btnTorch.tag = settings.torch
         mBinding.btnTorch.setOnClickListener {

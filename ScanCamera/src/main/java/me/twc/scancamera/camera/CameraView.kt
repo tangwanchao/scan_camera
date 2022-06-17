@@ -7,14 +7,11 @@ import android.graphics.Rect
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import android.util.AttributeSet
+import android.util.Log
 import android.util.Size
-import android.view.TextureView
-import android.view.View
-import android.view.ViewGroup
-import android.view.WindowManager
+import android.view.*
 import android.widget.FrameLayout
 import androidx.annotation.FloatRange
-import androidx.annotation.IntRange
 import androidx.core.view.children
 import androidx.core.view.isVisible
 import androidx.lifecycle.Lifecycle
@@ -26,6 +23,7 @@ import me.twc.scancamera.camera.decoration.CropRect
 import me.twc.scancamera.camera.setting.Settings
 import me.twc.utils.RotationUtil
 import me.twc.utils.logD
+import kotlin.math.max
 
 /**
  * @author 唐万超
@@ -45,6 +43,9 @@ class CameraView @JvmOverloads constructor(
         addView(this@apply, LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT))
     }
     private lateinit var mSettings: Settings
+
+    // 是否支持手动对焦
+    private var mManualFocus = false
 
     override fun onAttachedToWindow() {
         val wm = context.getSystemService(Context.WINDOW_SERVICE) as WindowManager
@@ -129,6 +130,11 @@ class CameraView @JvmOverloads constructor(
     //<editor-fold desc="功能性 API">
     // 设置手电筒
     fun setTorch(on: Boolean) = mCameraManager.setTorch(on)
+
+    // 设置手动对焦,只支持竖屏锁定下手动对焦
+    fun setManualFocus(enable: Boolean) {
+        mManualFocus = enable
+    }
 
     // 预览缩放
     fun setScale(scale: Float) {
@@ -297,6 +303,14 @@ class CameraView @JvmOverloads constructor(
             val camera = mCamera ?: return@enqueue
             val cameraParametersWorker = mCameraParametersWorker ?: return@enqueue
             cameraParametersWorker.setTorch(camera, on, mAutoFocusManager)
+        }
+        //</editor-fold>
+
+        //<editor-fold desc="手动对焦">
+        fun setManualFocusing(rect: Rect) = mCameraThread.enqueue {
+            val camera = mCamera ?: return@enqueue
+            val cameraParametersWorker = mCameraParametersWorker ?: return@enqueue
+            cameraParametersWorker.setManualFocusing(camera, rect)
         }
         //</editor-fold>
 
@@ -591,6 +605,96 @@ class CameraView @JvmOverloads constructor(
         fun destroy() {
             mCameraThread.quit()
         }
+    }
+    //</editor-fold>
+
+    override fun onTouchEvent(event: MotionEvent): Boolean {
+
+        if (mManualFocus && event.action == MotionEvent.ACTION_DOWN) {
+            val cameraOrientation = mCameraManager.mCamera?.orientation
+            if (cameraOrientation != null) {
+                val rect = calculateTapArea(event.x, event.y, width, height)
+                if (rect != null) {
+                    when (cameraOrientation) {
+                        90 -> {
+                            rect.offset(1000, 1000)
+                            rect.counterclockwiseRotation90()
+                            rect.offset(-1000, -1000)
+                        }
+                        180 -> {
+                            rect.offset(1000, 1000)
+                            rect.counterclockwiseRotation90()
+                            rect.counterclockwiseRotation90()
+                            rect.offset(-1000, -1000)
+                        }
+                        270 -> {
+                            rect.counterclockwiseRotation90()
+                            rect.counterclockwiseRotation90()
+                            rect.counterclockwiseRotation90()
+                        }
+                    }
+                    mCameraManager.setManualFocusing(rect)
+                }
+
+            }
+        }
+        return super.onTouchEvent(event)
+    }
+
+    private fun Rect.counterclockwiseRotation90() {
+        val newCenterX = this.centerY()
+        val newCenterY = 2000 - this.centerX()
+        val left = clamp(newCenterX - this.height() / 2,0,2000)
+        val top = clamp(newCenterY - this.width() / 2,0,2000)
+        val right = clamp(left + this.height(),0,2000)
+        val bottom = clamp(top + this.width(),0,2000)
+        this.set(left, top, right, bottom)
+    }
+
+    /**
+     * 转换对焦区域
+     * 范围(-1000, -1000, 1000, 1000)
+     * x,y是坐标位置，width,height SurfaceView的宽高，coefficient是区域比例大小
+     */
+    private fun calculateTapArea(
+        x: Float,
+        y: Float,
+        surfaceWidth: Int,
+        surfaceHeight: Int,
+        coefficient: Float = 0.5f
+    ): Rect? {
+        if (surfaceWidth <= 0 || surfaceHeight <= 0) {
+            return null
+        }
+        val focusAreaSize = 200
+        //这段代码可以看出coefficient的作用，只是为了扩展areaSize
+        val areaSize = max(50, focusAreaSize * coefficient.toInt())
+        //解释一下为什么*2000
+        // 因为要把surfaceView的坐标转换为范围(-1000, -1000, 1000, 1000)
+        // 则SurfaceView的中心点坐标会转化为（0,0)
+        // x/surfaceWidth,得到当前x坐标占总宽度的比例,然后乘以2000就换算成了（0,0，2000,2000）的坐标范围内
+        // 然后减去1000，就换算为了范围(-1000, -1000, 1000, 1000)的坐标。
+        // 得到了x,y转换后的坐标，利用areaSize就可以得到聚焦区域。
+        val centerX = (x / surfaceWidth * 2000 - 1000).toInt()
+        val centerY = (y / surfaceHeight * 2000 - 1000).toInt()
+        val left = clamp(centerX - (areaSize / 2))
+        val top = clamp(centerY - (areaSize / 2))
+        val right = clamp(left + areaSize)
+        val bottom = clamp(top + areaSize)
+        return Rect(left, top, right, bottom)
+    }
+
+    /**
+     * 不大于最大值,不小于最小值
+     */
+    private fun clamp(x: Int, min: Int = -1000, max: Int = 1000): Int {
+        if (x > max) {
+            return max
+        }
+        if (x < min) {
+            return min
+        }
+        return x
     }
     //</editor-fold>
 }
