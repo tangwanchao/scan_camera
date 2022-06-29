@@ -5,7 +5,6 @@ package me.twc.scancamera.camera
 import android.graphics.Matrix
 import android.graphics.Rect
 import android.hardware.Camera
-import android.util.Log
 import android.util.Size
 import android.view.Display
 import android.view.TextureView
@@ -110,6 +109,12 @@ data class CameraParametersWorker(
             }
         }
         parameters.setPreviewSize(previewSize.width, previewSize.height)
+        if (!safeMode) {
+            val photoSize = getBestPhotoSize(parameters, previewSize, settings.minPhotoSize)
+            if (photoSize != null) {
+                parameters.setPictureSize(photoSize.width, photoSize.height)
+            }
+        }
     }
 
     private fun getBestPreviewSize(parameter: Camera.Parameters): Size? {
@@ -124,6 +129,20 @@ data class CameraParametersWorker(
             sizes.map { copy.com.journeyapps.barcodescanner.Size(it.width, it.height) },
             desired.toSize()
         ).toSize()
+    }
+
+    private fun getBestPhotoSize(parameters: Camera.Parameters, previewSize: Size, min: Size): Size? {
+        val sizes = parameters.supportedPictureSizes ?: mutableListOf()
+        if (sizes.isEmpty()) {
+            parameters.pictureSize?.let(sizes::add)
+        }
+        if (sizes.isEmpty()) return null
+        return mPreviewScalingStrategy.getBestPhotoSize(
+            sizes.map { copy.com.journeyapps.barcodescanner.Size(it.width, it.height) },
+            previewSize.toSize(),
+            min.toSize()
+        ).toSize()
+
     }
 
     /**

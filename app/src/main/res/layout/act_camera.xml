@@ -13,8 +13,8 @@
 
         <me.twc.scancamera.camera.CameraView
             android:id="@+id/camera_view"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_width="300sp"
+            android:layout_height="300sp">
 
             <me.twc.scancamera.camera.decoration.ConstraintShadowLayout
                 android:layout_width="match_parent"

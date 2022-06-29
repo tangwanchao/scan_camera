@@ -1,5 +1,6 @@
 package me.twc.scancamera.camera.setting
 
+import android.util.Size
 import androidx.annotation.Keep
 import com.google.zxing.BarcodeFormat
 
@@ -27,7 +28,8 @@ data class Settings(
     val decodeFormats: List<BarcodeFormat> = listOf(
         BarcodeFormat.CODE_128,
         BarcodeFormat.QR_CODE
-    )
+    ),
+    val minPhotoSize: Size = Size(1080, 1080)
 ) {
     val autoFocusEnable = focusMode == FocusMode.AUTO
 }

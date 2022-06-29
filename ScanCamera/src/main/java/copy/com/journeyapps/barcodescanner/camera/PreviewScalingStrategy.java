@@ -50,6 +50,18 @@ public abstract class PreviewScalingStrategy {
         return ordered.get(0);
     }
 
+    public Size getBestPhotoSize(List<Size> sizes, Size previewSize, final Size min) {
+        List<Size> ordered = getBestPreviewOrder(sizes, previewSize);
+        Log.i(TAG, "所有排序后照片分辨率: " + ordered);
+        for (Size size : ordered) {
+            if (size.width >= min.width && size.height >= min.height) {
+                Log.i(TAG, "查找到最佳照片分辨率: " + size);
+                return size;
+            }
+        }
+        return ordered.get(0);
+    }
+
     /**
      * Sort previews based on their suitability.
      * <p>
