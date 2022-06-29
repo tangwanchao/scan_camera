@@ -3,11 +3,11 @@ package copy.com.journeyapps.barcodescanner.camera;
 import android.graphics.Rect;
 import android.util.Log;
 
-import copy.com.journeyapps.barcodescanner.Size;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+
+import copy.com.journeyapps.barcodescanner.Size;
 
 /**
  *
@@ -17,13 +17,13 @@ public abstract class PreviewScalingStrategy {
 
     /**
      * Choose the best preview size, based on our viewfinder size.
-     *
+     * <p>
      * The default implementation lets subclasses calculate a score for each size, the picks the one
      * with the best score.
-     *
+     * <p>
      * The sizes list may be reordered by this call.
      *
-     * @param sizes supported preview sizes, containing at least one size. Sizes are in natural camera orientation.
+     * @param sizes   supported preview sizes, containing at least one size. Sizes are in natural camera orientation.
      * @param desired The desired viewfinder size, in the same orientation
      * @return the best preview size, never null
      */
@@ -35,18 +35,29 @@ public abstract class PreviewScalingStrategy {
 
         Log.i(TAG, "Viewfinder size: " + desired);
         Log.i(TAG, "Preview in order of preference: " + ordered);
-
+        for (Size size : ordered) {
+            if (size.width / desired.width == size.height / desired.height) {
+                Log.i(TAG, "查找到最佳分辨率: " + size);
+                return size;
+            }
+        }
+        for (Size size : ordered) {
+            if (size.width >= desired.width && size.height >= desired.height) {
+                Log.i(TAG, "查找到次要分辨率: " + size);
+                return size;
+            }
+        }
         return ordered.get(0);
     }
 
     /**
      * Sort previews based on their suitability.
-     *
+     * <p>
      * In most cases, {@link #getBestPreviewSize(List, Size)} should be used instead.
-     *
+     * <p>
      * The sizes list may be reordered by this call.
      *
-     * @param sizes supported preview sizes, containing at least one size. Sizes are in natural camera orientation.
+     * @param sizes   supported preview sizes, containing at least one size. Sizes are in natural camera orientation.
      * @param desired The desired viewfinder size, in the same orientation
      * @return an ordered list, best preview first
      */
@@ -71,13 +82,13 @@ public abstract class PreviewScalingStrategy {
 
     /**
      * Get a score for our size.
-     *
+     * <p>
      * 1.0 is perfect (exact match).
      * 0.0 means we can't use it at all.
-     *
+     * <p>
      * Subclasses should override this.
      *
-     * @param size the camera preview size (that can be scaled)
+     * @param size    the camera preview size (that can be scaled)
      * @param desired the viewfinder size
      * @return the score
      */
@@ -88,7 +99,7 @@ public abstract class PreviewScalingStrategy {
     /**
      * Scale and position the preview relative to the viewfinder.
      *
-     * @param previewSize the size of the preview (camera), in current display orientation
+     * @param previewSize    the size of the preview (camera), in current display orientation
      * @param viewfinderSize the size of the viewfinder (display), in current display orientation
      * @return a rect placing the preview, relative to the viewfinder
      */
