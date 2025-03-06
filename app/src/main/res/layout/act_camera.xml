@@ -13,8 +13,8 @@
 
         <me.twc.scancamera.camera.CameraView
             android:id="@+id/camera_view"
-            android:layout_width="300sp"
-            android:layout_height="300sp">
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
 
             <me.twc.scancamera.camera.decoration.ConstraintShadowLayout
                 android:layout_width="match_parent"
@@ -71,6 +71,13 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="扫码" />
+
+                <Button
+                    android:id="@+id/btn_multiple_scan"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="多码扫码"/>
 
                 <Button
                     android:id="@+id/btn_take"

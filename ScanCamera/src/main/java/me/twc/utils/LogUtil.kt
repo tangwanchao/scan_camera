@@ -1,6 +1,7 @@
 package me.twc.utils
 
 import android.util.Log
+import me.twc.scancamera.BuildConfig
 
 /**
  * @author 唐万超
@@ -9,7 +10,7 @@ import android.util.Log
 private const val TAG = "ScanCamera"
 
 fun logD(message: String, th: Throwable? = null) {
-    if (Log.isLoggable(TAG, Log.DEBUG)) {
+    if (Log.isLoggable(TAG, Log.DEBUG) || BuildConfig.DEBUG) {
         Log.d(TAG, message, th)
     }
 }

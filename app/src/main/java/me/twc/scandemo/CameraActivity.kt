@@ -1,6 +1,7 @@
 package me.twc.scandemo
 
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.google.zxing.Result
 import me.twc.scancamera.camera.ScanBarcodeCallback
@@ -28,11 +29,6 @@ class CameraActivity : AppCompatActivity() {
             focusMode = FocusMode.CONTINUOUS
         )
         mBinding.cameraView.bindLifecycle(lifecycle, settings)
-        mBinding.cameraView.scanBarcode(object : ScanBarcodeCallback {
-            override fun onResult(result: Result) {
-                logD("扫码结果:$result")
-            }
-        })
         mBinding.cameraView.setManualFocus(true)
 
         mBinding.btnTorch.tag = settings.torch
@@ -45,6 +41,28 @@ class CameraActivity : AppCompatActivity() {
             mBinding.cameraView.scanBarcode(object : ScanBarcodeCallback {
                 override fun onResult(result: Result) {
                     logD("扫码结果:$result")
+                }
+            })
+        }
+        mBinding.btnMultipleScan.setOnClickListener {
+            logD("开启多码扫码")
+            mBinding.cameraView.scanBarcode(object : ScanBarcodeCallback {
+
+                override fun isMultiple(): Boolean = true
+
+                override fun onResult(result: Array<Result>) {
+                    var needResult: String? = null
+                    result.forEachIndexed { index, data ->
+                        logD("多码扫码结果[$index]:${data.text}")
+                        if (data.text.length != 15) {
+                            needResult = data.text
+                        }
+                    }
+                    if (needResult == null) {
+                        mBinding.cameraView.scanBarcode(this)
+                    }else{
+                        Toast.makeText(this@CameraActivity, needResult, Toast.LENGTH_LONG).show()
+                    }
                 }
             })
         }

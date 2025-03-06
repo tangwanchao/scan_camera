@@ -350,13 +350,26 @@ class CameraView @JvmOverloads constructor(
                 logD("source data is null")
                 return
             }
-            decodeThread.decode(sourceData) {
-                // 重新检查
-                if (mScanBarcodeCallback != null) {
-                    if (it != null) {
-                        callback.onResult(it)
-                    } else if (callback.autoRetry()) {
-                        scanBarcode(callback)
+            if (callback.isMultiple()) {
+                decodeThread.decodeMultiple(sourceData) {
+                    // 重新检查
+                    if (mScanBarcodeCallback != null) {
+                        if (it != null) {
+                            callback.onResult(it)
+                        } else if (callback.autoRetry()) {
+                            scanBarcode(callback)
+                        }
+                    }
+                }
+            } else {
+                decodeThread.decode(sourceData) {
+                    // 重新检查
+                    if (mScanBarcodeCallback != null) {
+                        if (it != null) {
+                            callback.onResult(it)
+                        } else if (callback.autoRetry()) {
+                            scanBarcode(callback)
+                        }
                     }
                 }
             }
@@ -621,12 +634,14 @@ class CameraView @JvmOverloads constructor(
                             rect.counterclockwiseRotation90()
                             rect.offset(-1000, -1000)
                         }
+
                         180 -> {
                             rect.offset(1000, 1000)
                             rect.counterclockwiseRotation90()
                             rect.counterclockwiseRotation90()
                             rect.offset(-1000, -1000)
                         }
+
                         270 -> {
                             rect.counterclockwiseRotation90()
                             rect.counterclockwiseRotation90()
@@ -644,10 +659,10 @@ class CameraView @JvmOverloads constructor(
     private fun Rect.counterclockwiseRotation90() {
         val newCenterX = this.centerY()
         val newCenterY = 2000 - this.centerX()
-        val left = clamp(newCenterX - this.height() / 2,0,2000)
-        val top = clamp(newCenterY - this.width() / 2,0,2000)
-        val right = clamp(left + this.height(),0,2000)
-        val bottom = clamp(top + this.width(),0,2000)
+        val left = clamp(newCenterX - this.height() / 2, 0, 2000)
+        val top = clamp(newCenterY - this.width() / 2, 0, 2000)
+        val right = clamp(left + this.height(), 0, 2000)
+        val bottom = clamp(top + this.width(), 0, 2000)
         this.set(left, top, right, bottom)
     }
 

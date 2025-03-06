@@ -33,7 +33,7 @@ public class Decoder implements ResultPointCallback {
         this.reader = reader;
     }
 
-    protected Reader getReader() {
+    public Reader getReader() {
         return reader;
     }
 
