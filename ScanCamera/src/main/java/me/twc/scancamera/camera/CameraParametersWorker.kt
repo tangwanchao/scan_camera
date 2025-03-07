@@ -168,12 +168,19 @@ data class CameraParametersWorker(
             cameraViewSize.toSize()
         )
         cropRectInCameraView.offset(-scalePreviewRect.left, -scalePreviewRect.top)
-        return Rect(
+        val resultRect = Rect(
             cropRectInCameraView.left * previewSize.width / scalePreviewRect.width(),
             cropRectInCameraView.top * previewSize.height / scalePreviewRect.height(),
             cropRectInCameraView.right * previewSize.width / scalePreviewRect.width(),
             cropRectInCameraView.bottom * previewSize.height / scalePreviewRect.height(),
         )
+        // 精度损失粗暴修复
+        if (cropRectInCameraView.width() == cropRectInCameraView.height() && resultRect.width() != resultRect.height()) {
+            val fixedSize = (resultRect.width() + resultRect.height()) / 2
+            resultRect.right = resultRect.left + fixedSize
+            resultRect.bottom = resultRect.top + fixedSize
+        }
+        return resultRect
     }
 
     /**
