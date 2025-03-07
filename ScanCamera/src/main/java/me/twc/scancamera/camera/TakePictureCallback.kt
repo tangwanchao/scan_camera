@@ -1,6 +1,12 @@
 package me.twc.scancamera.camera
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Rect
 import android.hardware.Camera
+import androidx.annotation.WorkerThread
+import me.twc.utils.ImageUtil
+import me.twc.utils.logD
 
 /**
  * @author 唐万超
@@ -12,8 +18,44 @@ data class PictureInfo(
     val displayRotation: Int,
     val deviceRotation: Int,
     // jpeg 图片需要旋转的角度
-    val captureRotation: Int
-)
+    val captureRotation: Int,
+    // jpeg 图片旋转后可以根据该 rect 进行裁剪,裁剪后将得到预览框中图片
+    val cropImageRect: Rect?
+) {
+
+    /**
+     * @param bytes jpeg byteArray
+     */
+    @WorkerThread
+    fun getBitmap(bytes: ByteArray): Bitmap {
+        val image = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+        val rotatedImage = ImageUtil.rotate(image, captureRotation)
+        if (cropImageRect == null) {
+            return rotatedImage
+        }
+        return Bitmap.createBitmap(
+            rotatedImage,
+            cropImageRect.left, cropImageRect.top,
+            cropImageRect.width(), cropImageRect.height()
+        )
+    }
+
+    @WorkerThread
+    fun bitmap2Bytes(src: Bitmap): ByteArray {
+        return ImageUtil.bitmap2Bytes(src)
+    }
+
+    @WorkerThread
+    fun compress(
+        src: Bitmap,
+        maxWidth: Int = 2000,
+        maxHeight: Int = 2000,
+        maxSize: Long = 795648L
+    ): ByteArray {
+        val compressedBitmap = ImageUtil.compressBySize(src, maxWidth, maxHeight)
+        return ImageUtil.compressByQuality(compressedBitmap, maxSize, false)
+    }
+}
 
 typealias PictureWithParamCallback = (data: ByteArray, camera: Camera, info: PictureInfo) -> Unit
 

@@ -71,7 +71,8 @@ class CameraActivity : AppCompatActivity() {
                 TakePictureCallback(
                     autoStartPreview = true,
                     jpeg = { bytes, camera, info ->
-                        File(cacheDir, "${System.currentTimeMillis()}.jpeg").writeBytes(bytes)
+                        val bitmap = info.getBitmap(bytes)
+                        File(cacheDir, "${System.currentTimeMillis()}.jpeg").writeBytes(info.bitmap2Bytes(bitmap))
                         logD("图片信息: $info")
                     })
             )

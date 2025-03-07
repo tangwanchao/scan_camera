@@ -413,7 +413,8 @@ class CameraView @JvmOverloads constructor(
                     val info = PictureInfo(
                         displayRotation,
                         deviceRotation,
-                        captureRotation
+                        captureRotation,
+                        mCameraParametersWorker?.getCropPreviewRect(camera,getCropRect())
                     )
                     camera.camera.takePicture(
                         takePictureCallback.shutter,
