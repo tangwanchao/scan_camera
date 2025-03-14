@@ -123,12 +123,16 @@ data class CameraParametersWorker(
             parameter.previewSize?.let(sizes::add)
         }
         if (sizes.isEmpty()) return null
-
+        sizes.forEach {
+            logD("支持的预览大小:${it.width}-${it.height}")
+        }
         val desired = if (isCameraRotated()) cameraViewSize.rotation() else cameraViewSize
-        return mPreviewScalingStrategy.getBestPreviewSize(
+        val best = mPreviewScalingStrategy.getBestPreviewSize(
             sizes.map { copy.com.journeyapps.barcodescanner.Size(it.width, it.height) },
             desired.toSize()
         ).toSize()
+        logD("最佳预览大小:${best.width}-${best.height}")
+        return best
     }
 
     private fun getBestPhotoSize(parameters: Camera.Parameters, previewSize: Size, min: Size): Size? {
@@ -137,11 +141,16 @@ data class CameraParametersWorker(
             parameters.pictureSize?.let(sizes::add)
         }
         if (sizes.isEmpty()) return null
-        return mPreviewScalingStrategy.getBestPhotoSize(
+        sizes.forEach {
+            logD("支持的照片大小:${it.width}-${it.height}")
+        }
+        val best = mPreviewScalingStrategy.getBestPhotoSize(
             sizes.map { copy.com.journeyapps.barcodescanner.Size(it.width, it.height) },
             previewSize.toSize(),
             min.toSize()
         ).toSize()
+        logD("最佳照片大小:${best.width}-${best.height}")
+        return best
 
     }
 
