@@ -2,11 +2,15 @@ package me.twc.utils
 
 import android.graphics.Bitmap
 import android.graphics.Bitmap.CompressFormat
+import android.graphics.ImageFormat
 import android.graphics.Matrix
+import android.graphics.Rect
+import android.graphics.YuvImage
 import androidx.annotation.WorkerThread
 import androidx.core.graphics.scale
 import java.io.ByteArrayOutputStream
 import kotlin.math.min
+
 
 /**
  * @author 唐万超
@@ -114,5 +118,13 @@ object ImageUtil {
         val baos = ByteArrayOutputStream()
         bitmap.compress(format, quality, baos)
         return baos.toByteArray()
+    }
+
+    @WorkerThread
+    fun convertYuvToJpeg(yuvData: ByteArray, width: Int, height: Int): ByteArray {
+        val yuvImage = YuvImage(yuvData, ImageFormat.NV21, width, height, null)
+        val outputStream = ByteArrayOutputStream()
+        yuvImage.compressToJpeg(Rect(0, 0, width, height), 100, outputStream)
+        return outputStream.toByteArray()
     }
 }

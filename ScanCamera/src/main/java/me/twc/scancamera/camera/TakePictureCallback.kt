@@ -20,6 +20,7 @@ data class PictureInfo(
     // jpeg 图片需要旋转的角度
     val captureRotation: Int,
     // jpeg 图片旋转后可以根据该 rect 进行裁剪,裁剪后将得到预览框中图片
+    // 注意: 仅预览回调能使用该方法裁剪,拍照回调裁剪可能在错误的位置裁剪
     val cropImageRect: Rect?
 ) {
 
@@ -27,10 +28,10 @@ data class PictureInfo(
      * @param bytes jpeg byteArray
      */
     @WorkerThread
-    fun getBitmap(bytes: ByteArray): Bitmap {
+    fun getBitmap(bytes: ByteArray, clip: Boolean = false): Bitmap {
         val image = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
         val rotatedImage = ImageUtil.rotate(image, captureRotation)
-        if (cropImageRect == null) {
+        if (cropImageRect == null || !clip) {
             return rotatedImage
         }
         return Bitmap.createBitmap(

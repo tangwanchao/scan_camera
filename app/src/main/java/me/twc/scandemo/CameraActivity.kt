@@ -60,7 +60,7 @@ class CameraActivity : AppCompatActivity() {
                     }
                     if (needResult == null) {
                         mBinding.cameraView.scanBarcode(this)
-                    }else{
+                    } else {
                         Toast.makeText(this@CameraActivity, needResult, Toast.LENGTH_LONG).show()
                     }
                 }
@@ -73,9 +73,14 @@ class CameraActivity : AppCompatActivity() {
                     jpeg = { bytes, camera, info ->
                         val bitmap = info.getBitmap(bytes)
                         File(cacheDir, "${System.currentTimeMillis()}.jpeg").writeBytes(info.bitmap2Bytes(bitmap))
-                        logD("图片信息: $info")
                     })
             )
+        }
+        mBinding.btnPreviewTake.setOnClickListener {
+            mBinding.cameraView.takePictureWithPreviewCallback(TakePictureCallback(jpeg = { bytes, camera, info ->
+                val bitmap = info.getBitmap(bytes, true)
+                File(cacheDir, "img${System.currentTimeMillis()}.jpeg").writeBytes(info.bitmap2Bytes(bitmap))
+            }))
         }
     }
 }

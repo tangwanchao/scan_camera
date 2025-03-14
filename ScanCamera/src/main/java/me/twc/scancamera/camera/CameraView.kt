@@ -7,7 +7,6 @@ import android.graphics.Rect
 import android.graphics.SurfaceTexture
 import android.hardware.Camera
 import android.util.AttributeSet
-import android.util.Log
 import android.util.Size
 import android.view.*
 import android.widget.FrameLayout
@@ -21,6 +20,7 @@ import copy.com.journeyapps.barcodescanner.camera.AutoFocusManager
 import me.twc.impl.SimpleSurfaceTextureListener
 import me.twc.scancamera.camera.decoration.CropRect
 import me.twc.scancamera.camera.setting.Settings
+import me.twc.utils.ImageUtil
 import me.twc.utils.RotationUtil
 import me.twc.utils.logD
 import kotlin.math.max
@@ -151,8 +151,10 @@ class CameraView @JvmOverloads constructor(
     fun scanBarcode(callback: ScanBarcodeCallback) = mCameraManager.scanBarcode(callback)
 
     // 拍照
-    fun takePicture(takePictureCallback: TakePictureCallback) =
-        mCameraManager.takePicture(takePictureCallback)
+    fun takePicture(callback: TakePictureCallback) = mCameraManager.takePicture(callback)
+
+    // 预览帧获取,callback 仅 jpeg 参数有效,其他参数设置后不工作
+    fun takePictureWithPreviewCallback(callback: TakePictureCallback) = mCameraManager.takePictureWithPreviewCallback(callback)
     //</editor-fold>
 
     //<editor-fold desc="相机管理器">
@@ -386,6 +388,39 @@ class CameraView @JvmOverloads constructor(
         }
         //</editor-fold>
 
+        //<editor-fold desc="获取预览帧数据">
+        fun takePictureWithPreviewCallback(callback: TakePictureCallback) = mCameraThread.enqueue {
+            mScanBarcodeCallback = null
+            if (!mStartedPreview) {
+                return@enqueue
+            }
+            mCamera?.camera?.setOneShotPreviewCallback { data, camera ->
+                val cameraParametersWorker = mCameraParametersWorker
+                val openCamera = mCamera
+                val previewSize = mCamera?.camera?.parameters?.previewSize
+                if (cameraParametersWorker == null || openCamera == null || previewSize == null) {
+                    logD("takePictureWithPreviewCallback 异常, cameraParametersWorker == null || openCamera == null || previewSize == null")
+                    return@setOneShotPreviewCallback
+                }
+                val displayRotation = mDisplayOrientationDetector.getDisplayRotation()
+                val deviceRotation = mDisplayOrientationDetector.getDeviceRotation()
+                val captureRotation = RotationUtil.calculateCaptureRotation(
+                    openCamera,
+                    displayRotation,
+                    deviceRotation
+                )
+                val info = PictureInfo(
+                    displayRotation,
+                    deviceRotation,
+                    captureRotation,
+                    mCameraParametersWorker?.getCropPreviewRect(openCamera, getCropRect())
+                )
+                val jpegData = ImageUtil.convertYuvToJpeg(data,previewSize.width,previewSize.height)
+                callback.jpeg?.invoke(jpegData, openCamera.camera, info)
+            }
+        }
+        //</editor-fold>
+
         //<editor-fold desc="拍照">
         fun takePicture(takePictureCallback: TakePictureCallback) = mCameraThread.enqueue {
             if (!mStartedPreview) {
@@ -414,7 +449,7 @@ class CameraView @JvmOverloads constructor(
                         displayRotation,
                         deviceRotation,
                         captureRotation,
-                        mCameraParametersWorker?.getCropPreviewRect(camera,getCropRect())
+                        mCameraParametersWorker?.getCropPreviewRect(camera, getCropRect())
                     )
                     camera.camera.takePicture(
                         takePictureCallback.shutter,
